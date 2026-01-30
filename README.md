@@ -31,7 +31,7 @@ Inngest is a serverless event-driven workflow orchestration platform. It lets yo
 ## Installation
 
 ```bash
-npx skills add get-theo-ai/agent-skills
+bunx skills add get-theo-ai/agent-skills
 ```
 
 ## Usage
