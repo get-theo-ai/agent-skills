@@ -1,5 +1,5 @@
 ---
-name: jujutsu
+name: theo-jujutsu
 description: Jujutsu (`jj`) is a Git-compatible version control system with a simpler mental model - no staging area, working copy is always a commit, and conflicts don't block operations. Use this skill for version control operations in `jj` repositories (which may be co-located with `git`) or when `jj` is called out specifically.
 metadata:
   author: "Theo Ai"
