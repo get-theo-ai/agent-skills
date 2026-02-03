@@ -2,7 +2,7 @@
 name: theo-inngest
 description: Inngest is a serverless event-driven workflow orchestration platform. It lets you build durable, stateful background jobs and workflows without managing infrastructure. Use this skill when working with Inngest functions, events, schemas, testing, or anything else Inngest-related.
 metadata:
-  author: vercel
+  author: "Theo Ai"
   version: "1.0.0"
 ---
 

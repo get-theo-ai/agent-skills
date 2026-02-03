@@ -6,6 +6,30 @@ Skills follow the [Agent Skills](https://agentskills.io/) format.
 
 ## Available Skills
 
+### jujutsu
+
+Jujutsu (jj) is a Git-compatible version control system with a simpler mental model - no staging area, working copy is always a commit, and conflicts don't block operations.
+
+**Use when:**
+
+- Creating, describing, or editing commits
+- Viewing repository status, history, or diffs
+- Rebasing, squashing, or splitting commits
+- Managing bookmarks (jj's equivalent of branches)
+- Pushing to or fetching from Git remotes
+- Resolving conflicts
+
+**Topics covered:**
+
+- Core concepts and Git-to-jj command translation
+- Working copy model and revision identifiers
+- History editing (squash, split, rebase, edit)
+- Bookmark management and Git interop
+- Revsets and templates for advanced querying
+- Advanced commands (bisect, fix, sign, split)
+- Common workflows and best practices
+- Error recovery with operation history
+
 ### theoai-inngest
 
 Inngest is a serverless event-driven workflow orchestration platform. It lets you build durable, stateful background jobs and workflows without managing infrastructure.
@@ -46,6 +70,14 @@ Create an Inngest function that processes webhooks
 
 ```
 Help me optimize this Inngest workflow
+```
+
+```
+Help me rebase my feature branch onto main
+```
+
+```
+How do I squash my last 3 commits in jj?
 ```
 
 ## Skill Structure
