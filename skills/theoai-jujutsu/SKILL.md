@@ -3,7 +3,7 @@ name: theo-jujutsu
 description: Jujutsu (`jj`) is a Git-compatible version control system with a simpler mental model - no staging area, working copy is always a commit, and conflicts don't block operations. Use this skill for version control operations in `jj` repositories (which may be co-located with `git`) or when `jj` is called out specifically.
 metadata:
   author: "Theo Ai"
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
 # Theo Ai's Jujutsu (jj) Version Control Guide
@@ -76,6 +76,7 @@ amendments.
 | staging/index | (none)          | Not applicable - all changes are tracked         |
 | stash         | (none)          | Just create a new commit instead                 |
 | remote branch | `name@origin`   | e.g., `main@origin`                              |
+| tag           | tag             | Lightweight tags only; annotated tags need Git   |
 
 ## Git-to-jj Command Translation
 
@@ -103,6 +104,18 @@ amendments.
 | `git switch -`           | `jj edit @-`                          | Go to parent                      |
 | `git stash`              | `jj new`                              | Start new commit (old work stays) |
 | `git stash pop`          | `jj edit <prev>`                      | Go back to previous commit        |
+
+### Tags
+
+| Git                         | jj                                  | Notes                            |
+|-----------------------------|-------------------------------------|----------------------------------|
+| `git tag -l`                | `jj tag list`                       | List tags                        |
+| `git tag <name> <rev>`      | `jj tag set <name> -r <rev>`        | Create lightweight tag           |
+| `git tag -f <name> <rev>`   | `jj tag set <name> -r <rev> --allow-move` | Move existing tag deliberately |
+| `git tag -d <name>`         | `jj tag delete <name>`              | Delete local tag                 |
+| `git tag --contains <rev>`  | `jj tag list -r '<rev>::'`          | Tags whose targets descend from rev |
+| `git tag --merged <rev>`    | `jj tag list -r '::<rev>'`          | Tags whose targets are ancestors of rev |
+| `git tag -a <name> <rev>`   | Use `git tag -a`                    | jj cannot create annotated tags  |
 
 ### History Editing
 
@@ -310,6 +323,70 @@ jj bookmark track main@origin
 # Untrack remote bookmark
 jj bookmark untrack <name>@<remote>
 ```
+
+## Working with Tags
+
+Tags are release/version markers. In Git-backed repositories, jj can read
+lightweight and annotated Git tags, but `jj tag set` creates lightweight tags
+only. Use Git when you need annotated or signed release tags.
+
+Tagged commits are immutable by default because `tags()` is included in
+`builtin_immutable_heads()`. If a rebase, squash, edit, or abandon fails near a
+release commit, check whether a tag is anchoring that history before using
+`--ignore-immutable`.
+
+```bash
+# List tags
+jj tag list
+jj tag list v1.*                 # glob/string-pattern match
+jj tag list --all-remotes        # include remote tags
+jj tag list --conflicted         # show conflicted tags only
+
+# Create lightweight tag at current commit
+jj tag set v1.2.3
+
+# Create lightweight tag at specific revision
+jj tag set v1.2.3 -r <rev>
+
+# Move an existing tag intentionally
+jj tag set v1.2.3 -r <rev> --allow-move
+
+# Delete local tag (does not abandon the commit)
+jj tag delete v1.2.3
+
+# Find tags containing a revision, like git tag --contains
+jj tag list -r '<rev>::'
+
+# Find tags merged into a revision, like git tag --merged
+jj tag list -r '::<rev>'
+```
+
+### Tag Git Interop
+
+`jj git push` is bookmark-oriented and has no `--tags` equivalent. In colocated
+workspaces, jj usually exports refs to the shared `.git` repo automatically; in
+non-colocated workspaces, run `jj git export` before using Git to publish tags.
+
+```bash
+# Create an annotated release tag with Git
+git tag -a v1.2.3 -m "v1.2.3" <rev>
+
+# Publish a single tag
+git push origin v1.2.3
+
+# Publish all local tags
+git push origin --tags
+
+# Delete a remote tag
+git push origin :refs/tags/v1.2.3
+```
+
+### Tag Name Resolution
+
+Revset symbols resolve tag names before bookmark names. If a tag and bookmark
+share the same name, the tag wins. For scripts or ambiguous names, prefer an
+explicit revset function such as `commit_id(<prefix>)`, `bookmarks(<pattern>)`,
+or `tags(<pattern>)`.
 
 ## Git Interop (Colocated Mode)
 
@@ -551,6 +628,7 @@ flag in many commands.
 | `root()`       | The root commit             |
 | `heads(all())` | All head commits            |
 | `bookmarks()`  | All commits with bookmarks  |
+| `tags()`       | All local tag targets       |
 | `main`         | Commit at bookmark "main"   |
 | `main@origin`  | Remote bookmark             |
 
@@ -586,6 +664,8 @@ flag in many commands.
 | `committer(pattern)`   | Commits by committer         |
 | `file(path)`           | Commits touching file/path   |
 | `mine()`               | Commits by current user      |
+| `tags(pattern)`        | Commits with matching tags   |
+| `remote_tags(pattern)` | Remote tag targets           |
 
 ### Common Revset Examples
 
@@ -610,6 +690,12 @@ jj log -r '::@ ~ ::main'
 
 # Show heads that aren't bookmarks
 jj log -r 'heads(all()) ~ bookmarks()'
+
+# Show all tagged commits
+jj log -r 'tags()'
+
+# Show commits since the latest v1 tag
+jj log -r 'latest(tags("v1.*"))..@'
 ```
 
 ## Templates
@@ -956,6 +1042,21 @@ jj new main -m "feat: my feature"
 jj bookmark create feat/my-feature
 ```
 
+### Treating Tags Like Bookmarks
+
+```bash
+# Bad: Moving a release tag casually
+jj tag set v1.2.3 -r @ --allow-move
+
+# Good: Verify the target and publish deliberately
+jj show <release-rev>
+jj tag set v1.2.3 -r <release-rev>
+git push origin v1.2.3
+```
+
+Tags are release anchors, not development pointers. Prefer bookmarks for active
+work and tags for stable version markers.
+
 ## Quick Reference
 
 ### Most Common Commands
@@ -970,6 +1071,8 @@ jj bookmark create feat/my-feature
 | `jj commit -m "msg"`    | Describe and create new commit |
 | `jj squash`             | Squash into parent             |
 | `jj rebase -d <dest>`   | Rebase to destination          |
+| `jj tag list`           | List tags                      |
+| `jj tag set <name> -r <rev>` | Create lightweight tag      |
 | `jj git fetch`          | Fetch from remote              |
 | `jj git push -b <name>` | Push bookmark                  |
 | `jj op undo`            | Undo last operation            |
