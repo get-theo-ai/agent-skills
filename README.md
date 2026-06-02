@@ -52,6 +52,24 @@ Inngest is a serverless event-driven workflow orchestration platform. It lets yo
 - Parallelization with Promise.all
 - Logging with Inngest's logger
 
+### theoai-kysely-query-perf
+
+Debug and optimize Kysely SQL query performance using `compile()` + `EXPLAIN ANALYZE` through the actual code path, not reconstructed SQL.
+
+**Use when:**
+
+- A Kysely query or endpoint is too slow
+- You need to see the exact SQL Kysely generates
+- You need EXPLAIN ANALYZE output from the real code path
+- Optimizing queries and need before/after comparison
+
+**Topics covered:**
+
+- Instrumenting Kysely queries with `compile()` and `EXPLAIN ANALYZE`
+- Reading EXPLAIN plans to identify bottlenecks
+- Building stress tests that measure responsiveness (TTFB, progressive delivery)
+- Before/after performance comparison methodology
+
 ## Installation
 
 ```bash
